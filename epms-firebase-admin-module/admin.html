@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard | Performly</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f7f8fc;color:#20233b;font-family:Inter,Arial,sans-serif}
+    header{background:white;border-bottom:1px solid #eceef5;padding:18px 5%;display:flex;align-items:center;justify-content:space-between;gap:15px}
+    .brand{font-size:25px;font-weight:800;letter-spacing:-1px}.brand span{color:#7957ed}
+    .wrap{max-width:1100px;margin:35px auto;padding:0 20px}.eyebrow{font-size:12px;letter-spacing:2px;color:#7a5be9;font-weight:800}
+    h1{margin:10px 0 8px;font-size:clamp(27px,4vw,36px)}.muted{color:#7d829a;line-height:1.5}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:25px}
+    .card{background:white;border:1px solid #eaedf5;border-radius:18px;padding:23px;margin:18px 0;box-shadow:0 8px 30px #24204c08}
+    .formgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end}
+    label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}input,select{width:100%;padding:12px;border:1px solid #dfe2ed;border-radius:10px;background:white;font-size:14px;color:#20233b}
+    button,.btn{border:0;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:750;cursor:pointer;text-decoration:none;display:inline-block}
+    .primary{background:#7652e9;color:white}.secondary{background:#f0edff;color:#6745d6}.danger{background:#fff0f1;color:#b42336}
+    .status{font-size:14px;line-height:1.5;margin-top:14px;color:#6e7288}.tablewrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:14px 12px;border-bottom:1px solid #eff0f6;font-size:14px}th{color:#7b8098;font-size:12px;text-transform:uppercase;letter-spacing:.7px}
+    .pill{display:inline-block;background:#eeebff;color:#6545d7;padding:5px 9px;border-radius:20px;font-size:12px;font-weight:750}
+    @media(max-width:800px){.formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.formgrid{grid-template-columns:1fr}.card{padding:17px}header{padding:16px 20px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">performly<span>.</span></div>
+    <div>
+      <a class="btn secondary" href="./index.html">View website</a>
+      <button id="logoutButton" class="primary" type="button">Log out</button>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="top">
+      <div>
+        <div class="eyebrow">ADMINISTRATION</div>
+        <h1>Admin dashboard</h1>
+        <div class="muted">Manage employee records stored in your Firestore database.</div>
+      </div>
+      <span class="pill" id="signedInLabel">Checking access…</span>
+    </div>
+
+    <section class="card">
+      <h2>Add employee</h2>
+      <p class="muted">This creates an employee record in Firestore. It does not create a sign-in account.</p>
+      <form id="employeeForm" class="formgrid">
+        <div><label for="name">Full name</label><input id="name" maxlength="100" required></div>
+        <div><label for="email">Work email</label><input id="email" type="email" maxlength="254" required></div>
+        <div><label for="department">Department</label><input id="department" maxlength="80" required></div>
+        <div><label for="jobTitle">Job title</label><input id="jobTitle" maxlength="80" required></div>
+        <div><button class="primary" type="submit" id="addButton">Add employee</button></div>
+      </form>
+      <div class="status" id="formMessage" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <div class="top">
+        <div><h2>Employees</h2><div class="muted">Records currently saved in Firestore.</div></div>
+        <button class="secondary" id="refreshButton" type="button">Refresh list</button>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Job title</th><th>Action</th></tr></thead>
+          <tbody id="employeeRows"><tr><td colspan="5">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="status" id="listMessage" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>

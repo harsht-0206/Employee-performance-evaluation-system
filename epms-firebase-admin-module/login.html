@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in | Performly</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f7fc;color:#20233b;font-family:Inter,Arial,sans-serif;padding:20px}
+    .card{width:min(420px,100%);background:white;border:1px solid #eceaf7;border-radius:22px;padding:32px;box-shadow:0 16px 50px #29205b12}
+    .brand{font-size:27px;font-weight:800;letter-spacing:-1px}.brand span{color:#7957ed}.muted{color:#7f849e;line-height:1.5}
+    label{display:block;font-size:14px;font-weight:650;margin:18px 0 7px}input{width:100%;padding:13px 14px;border:1px solid #dedfee;border-radius:11px;font-size:15px}
+    button{width:100%;margin-top:22px;padding:13px;border:0;border-radius:11px;background:#7652e9;color:#fff;font-weight:750;font-size:15px;cursor:pointer}
+    button:disabled{opacity:.65;cursor:wait}.message{margin-top:15px;font-size:14px;line-height:1.5}.back{display:inline-block;margin-top:18px;color:#6d4ce3;text-decoration:none;font-weight:650}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand">performly<span>.</span></div>
+    <p class="muted">Sign in to your Employee Performance Management workspace.</p>
+    <form id="loginForm">
+      <label for="email">Email address</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button id="submitButton" type="submit">Sign in</button>
+      <div id="message" class="message" role="status" aria-live="polite"></div>
+    </form>
+    <a class="back" href="./index.html">← Back to website</a>
+  </main>
+  <script type="module">
+    import { auth, db } from "./firebase-config.js";
+    import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+    const form = document.getElementById("loginForm");
+    const message = document.getElementById("message");
+    const button = document.getElementById("submitButton");
+
+    async function sendToRole(user) {
+      const profile = await getDoc(doc(db, "users", user.uid));
+      if (!profile.exists()) {
+        await auth.signOut();
+        message.textContent = "This account has no assigned role. Ask the project administrator.";
+        return;
+      }
+      const role = profile.data().role;
+      if (role === "admin") location.replace("./admin.html");
+      else {
+        await auth.signOut();
+        message.textContent = "This account is not authorized to access the admin area.";
+      }
+    }
+
+    onAuthStateChanged(auth, async user => {
+      if (!user) return;
+      try { await sendToRole(user); }
+      catch (error) { message.textContent = "Could not verify your role. Check Firebase setup and security rules."; }
+    });
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      button.disabled = true;
+      message.textContent = "Signing in…";
+      try {
+        const credential = await signInWithEmailAndPassword(
+          auth,
+          document.getElementById("email").value.trim(),
+          document.getElementById("password").value
+        );
+        await sendToRole(credential.user);
+      } catch (error) {
+        message.textContent = "Sign-in failed. Check your email/password and Firebase configuration.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

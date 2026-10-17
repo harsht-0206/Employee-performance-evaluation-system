@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // Users can read their own role record to determine where to send them.
+    // Only an existing admin can create/change/delete role records.
+    // Assign the first admin manually in the Firebase Console.
+    match /users/{userId} {
+      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Initial example: employee records are only visible and editable by admins.
+    match /employees/{employeeId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    // Deny all other Firestore paths unless explicitly allowed above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
